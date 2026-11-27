@@ -4,7 +4,7 @@ A cozy felt-style bubble battle game that runs in the browser. It's a single HTM
 
 一款毛毡画风的泡泡对战小游戏，打开网页就能玩。
 
-**▶ 在线游玩 / Play:** https://kapok1207-rgb.github.io/bubble-fluff/
+**▶ 在线游玩 / Play:** https://bubble-fluff.pages.dev
 
 ## 玩法 / How to play
 
