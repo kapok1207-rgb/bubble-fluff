@@ -189,7 +189,7 @@ function ground(c,G1,G2){
 function snowDots(c,x,y){c.save();for(let i=0;i<4;i++){c.fillStyle=`rgba(255,255,255,${rn(.6,.95)})`;c.beginPath();c.arc(x+rn(-7,7),y+rn(-5,5),rn(1.4,2.6),0,7);c.fill();}c.restore();}
 function sprinkle(c,x,y){c.save();c.lineCap='round';c.lineWidth=2.6;for(let i=0;i<3;i++){const a=R()*Math.PI,cx=x+rn(-8,8),cy=y+rn(-6,6);c.strokeStyle=['#F07E9C','#5DAEE8','#F3B94E','#7CC46A','#FFFFFF'][Math.floor(R()*5)];c.beginPath();c.moveTo(cx-Math.cos(a)*3,cy-Math.sin(a)*3);c.lineTo(cx+Math.cos(a)*3,cy+Math.sin(a)*3);c.stroke();}c.restore();}
 
-/* 第二章 雪原：雪松（炸不掉）、雪人（能炸）、冰湖（炸不掉） */
+/* 雪地：雪松（炸不掉）、雪人（能炸）、冰湖（炸不掉） */
 function pine(c,x,y,v){
   const cx=x+T/2,base=y+T-8;
   shadow(c,cx+3,base+2,T*.42,T*.15,.3);
@@ -239,7 +239,7 @@ function pond(c,x,y,n=3){
   felt(c,rr(qx-12,qy-11,24,4,2),'#E8735A',{fuzz:.4,flen:.5});
 }
 
-/* 第三章 糖果镇：棒棒糖（炸不掉）、纸杯蛋糕（能炸） */
+/* 糖果镇：树桩（炸不掉）、纸杯蛋糕（能炸） */
 function stump(c,x,y,v){
   const cx=x+T/2,base=y+T-8;
   shadow(c,cx+3,base+2,T*.46,T*.16,.38);
