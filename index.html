@@ -70,7 +70,7 @@
 </head>
 <body>
 <div id="top">
-  <div id="brand"><img id="logoSmall" alt="Bubble Fluff"><div class="felt banner">第一章 · 花园</div></div>
+  <div id="brand"><img id="logoSmall" alt="Bubble Fluff"><div class="felt banner">花园</div></div>
   <div id="hud"></div>
   <div class="felt keys"><b>小农夫</b> <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>空格</kbd> 水泡 · <kbd>Shift</kbd> 用针<br>
     <b>白鸭鸭</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动 · <kbd>Enter</kbd> 水泡 · <kbd>E</kbd> 用针<br>
@@ -440,15 +440,15 @@ addEventListener('blur',()=>{for(const k in keys) keys[k]=false;});
 function pickItem(){let r=Math.random()*100; for(const [t,w] of ITEM_W){if((r-=w)<0) return t;} return 'bubble';}
 // W = 炸不掉的单格（树/雪松/棒棒糖），C = 中心 3x3 大摆件，其余空地随机放能炸的东西
 const MAPS=[
-  {id:'garden',ch:'第一章',name:'花园',star:1,frame:'#B9CC6E',g:['#D6E48F','#C5D97C'],box:.62,itemP:.55,
+  {id:'garden',name:'花园',star:1,frame:'#B9CC6E',g:['#D6E48F','#C5D97C'],box:.62,itemP:.55,
    crumb:v=>[HOUSE_COL[v],'#F6E7CF'],
    help:'大树和花坛炸不掉，小房子能炸开，里面可能藏着道具',
    layout:['...............','...............','..W....W....W..','...............','......CCC......','....W.CCC.W....','......CCC......','...............','..W....W....W..','...............','...............']},
-  {id:'snow',ch:'第二章',name:'雪原',star:2,frame:'#A9CBE0',g:['#F4F8FB','#E1ECF4'],box:.6,itemP:.47,
+  {id:'snow',name:'雪地',star:2,frame:'#A9CBE0',g:['#F4F8FB','#E1ECF4'],box:.6,itemP:.47,
    crumb:v=>[SCARF[v],'#FFFFFF'],
    help:'雪松和冰湖炸不掉，雪人能炸开。雪松围成几道弯，小心被堵在角落',
    layout:['...............','...............','..WW.......WW..','..W...W.W...W..','......CCC......','.W..W.CCC.W..W.','......CCC......','..W...W.W...W..','..WW.......WW..','...............','...............']},
-  {id:'candy',ch:'第三章',name:'糖果镇',star:3,frame:'#EFB0C4',g:['#FDE9EE','#F8D6E0'],box:.55,itemP:.4,
+  {id:'candy',name:'糖果镇',star:3,frame:'#EFB0C4',g:['#FDE9EE','#F8D6E0'],box:.55,itemP:.4,
    crumb:v=>[FROST[v],'#F3B94E'],
    help:'树桩炸不掉，纸杯蛋糕能炸开。巷子窄、死胡同多，放水泡前先想好退路',
    layout:['...............','.W.WWW...WWW.W.','.W...........W.','...W.WW.WW.W...','.W.W.......W.W.','.....W.W.W.....','.W.W.......W.W.','...W.WW.WW.W...','.W...........W.','.W.WWW...WWW.W.','...............']},
@@ -735,7 +735,7 @@ function mapSprites(m){
 function applyMap(){
   SPR.m=mapSprites(MAP);
   document.getElementById('wrap').style.setProperty('--c',MAP.frame);
-  document.querySelector('#brand .banner').textContent=MAP.ch+' · '+MAP.name;
+  document.querySelector('#brand .banner').textContent=MAP.name;
 }
 
 let prevBox, dying=[], parts=[];
@@ -905,7 +905,7 @@ function showMenu(){
   state='menu'; overlay.className='';
   overlay.innerHTML=`<div class="felt panel">
     <img class="logo" src="${LOGO}" alt="Bubble Fluff"><div class="sub">毛毡泡泡对战</div>
-    <div class="pick"><span>地图</span>${MAPS.map(m=>`<button class="felt chip${m===MAP?' on':''}" data-map="${m.id}" style="--c:${m.frame}">${m.ch}<small>${m.name} ${'★'.repeat(m.star)}</small></button>`).join('')}</div>
+    <div class="pick"><span>地图</span>${MAPS.map(m=>`<button class="felt chip${m===MAP?' on':''}" data-map="${m.id}" style="--c:${m.frame}">${m.name}<small>${'★'.repeat(m.star)}</small></button>`).join('')}</div>
     <div class="pick"><span>电脑</span>${Object.entries(DIFF).map(([k,d])=>`<button class="felt chip${k===diff?' on':''}" data-diff="${k}" style="--c:${{easy:'#9CCB7A',normal:'#F3B94E'}[k]}">${d.label}</button>`).join('')}</div>
     <div class="modes">
       <button class="felt" data-m="solo">单人闯关<small>你 vs 3 个电脑</small></button>
