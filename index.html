@@ -48,6 +48,11 @@
   .logo{display:block;width:min(100%,400px);margin:-6px auto 0}
   .disc{margin-top:12px;font-size:11.5px;line-height:1.6;color:#8A5A38;opacity:.85}
   footer{max-width:900px;margin-top:auto;padding-top:8px;font-size:12px;line-height:1.6;text-align:center;opacity:.7}
+  .pick{display:flex;align-items:center;gap:8px;margin:0 0 12px;justify-content:center}
+  .pick>span{font-size:15px;width:36px;text-align:right}
+  button.chip{flex:1;font-size:15px;padding:6px 6px 7px;color:#5A3A28;text-shadow:0 1px 0 rgba(255,255,255,.5);opacity:.6}
+  button.chip small{font-size:11px;margin-top:0}
+  button.chip.on{opacity:1;outline:3px solid #fff;outline-offset:-1px}
   .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   button{--c:#F07E9C;font-family:inherit;font-size:clamp(16px,2.2vw,20px);color:#fff;border:0;padding:12px 10px 13px;cursor:pointer;
     text-shadow:0 1px 0 rgba(0,0,0,.18);transition:transform .12s}
@@ -177,10 +182,88 @@ function flowerbed(c,x,y,n=2){
     dot(c,fx,fy-1,2.2,col==='#FFD35C'?'#E2513F':'#F3B94E');
   });
 }
-const G1='#D6E48F', G2='#C5D97C';
-function ground(c){
+function ground(c,G1,G2){
   felt(c,rr(0,0,COLS*T,ROWS*T,0),G2,{dens:.5,light:.06,dark:.06,fuzz:0});
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++) felt(c,rr(x*T+3,y*T+3,T-6,T-7,12),(x+y)%2?G1:G2,{dens:.45,fuzz:.5,light:.22,dark:.12,depth:2.5});
+}
+function snowDots(c,x,y){c.save();for(let i=0;i<4;i++){c.fillStyle=`rgba(255,255,255,${rn(.6,.95)})`;c.beginPath();c.arc(x+rn(-7,7),y+rn(-5,5),rn(1.4,2.6),0,7);c.fill();}c.restore();}
+function sprinkle(c,x,y){c.save();c.lineCap='round';c.lineWidth=2.6;for(let i=0;i<3;i++){const a=R()*Math.PI,cx=x+rn(-8,8),cy=y+rn(-6,6);c.strokeStyle=['#F07E9C','#5DAEE8','#F3B94E','#7CC46A','#FFFFFF'][Math.floor(R()*5)];c.beginPath();c.moveTo(cx-Math.cos(a)*3,cy-Math.sin(a)*3);c.lineTo(cx+Math.cos(a)*3,cy+Math.sin(a)*3);c.stroke();}c.restore();}
+
+/* 第二章 雪原：雪松（炸不掉）、雪人（能炸）、冰湖（炸不掉） */
+function pine(c,x,y,v){
+  const cx=x+T/2,base=y+T-8;
+  shadow(c,cx+3,base+2,T*.42,T*.15,.3);
+  felt(c,rr(cx-5,base-14,10,14,3),'#8A5A38',{light:.2,depth:2});
+  const G=['#2F6B4F','#3B8060','#4E9A72'];
+  [[29,base-36,base-8],[24,base-53,base-28],[17,base-68,base-45]].forEach(([w,top,bot],i)=>{
+    felt(c,smooth([[cx-w,bot],[cx+w,bot],[cx,top]],2),G[i],{depth:4});
+    const m=top+(bot-top)*.5;
+    felt(c,smooth([[cx-w*.5,m],[cx-w*.15,m+4],[cx+w*.2,m-1],[cx+w*.5,m+3],[cx,top+2]],2),'#FFFFFF',{light:.15,dark:.18,fuzz:.8,flen:.7});
+  });
+  if(v%2) for(const [dx,dy] of [[-12,-20],[10,-36],[-5,-48]]) dot(c,cx+dx,base+dy,3,'#E2513F');
+}
+const SCARF=['#E8735A','#5DAEE8','#9C7FD6','#F2A23C'];
+function snowman(c,x,y,v){
+  const cx=x+T/2,base=y+T-8,sc=SCARF[v%4];
+  shadow(c,cx+3,base+2,T*.42,T*.14,.32);
+  felt(c,ell(cx,base-16,22,17),'#F7FAFF',{depth:4,light:.3,dark:.28,stitch:{k:.82,color:'rgba(150,180,210,.55)'}});
+  felt(c,ell(cx,base-41,16,14),'#F7FAFF',{depth:3,light:.3,dark:.28});
+  for(const dy of [-20,-11]) dot(c,cx,base+dy,2.4,'#5A4A44');
+  felt(c,rr(cx-17,base-31,34,8,4),sc,{depth:2,fuzz:.6,flen:.6});
+  felt(c,rr(cx+5,base-29,8,15,3),sc,{depth:1.5,fuzz:.6,flen:.6});
+  c.fillStyle='#3A2E2A'; for(const dx of [-6,5]){c.beginPath();c.arc(cx+dx,base-44,2.3,0,7);c.fill();}
+  felt(c,[[cx-1,base-41.5],[cx+11,base-39],[cx-1,base-36.5]],'#F28C38',{fuzz:.4,flen:.4,light:.3});
+  felt(c,smooth([[cx-14,base-51],[cx+14,base-51],[cx+10,base-63],[cx-10,base-63]],2),sc,{depth:2.5,fuzz:.7,flen:.7,stitch:{k:.75,color:'rgba(255,255,255,.6)'}});
+  felt(c,rr(cx-15,base-54,30,6,3),dk(sc,.15),{fuzz:.5,flen:.5});
+  dot(c,cx,base-65,4.5,'#FFFFFF');
+}
+function pond(c,x,y,n=3){
+  const S=T*n;
+  shadow(c,x+S/2+4,y+S-4,S*.48,T*.2,.3);
+  felt(c,rr(x+6,y+8,S-12,S-14,30),'#EEF4FA',{depth:6,light:.3,dark:.2,stitch:{k:.93,color:'rgba(140,175,205,.6)'}});
+  felt(c,rr(x+18,y+20,S-36,S-38,26),'#8FCBEA',{light:.55,dark:.25,dens:.6});
+  c.save(); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=2; c.lineCap='round';
+  for(const [a,b,d,e] of [[.3,.32,.48,.44],[.48,.44,.56,.36],[.48,.44,.5,.6],[.62,.6,.74,.66]]){c.beginPath();c.moveTo(x+S*a,y+S*b);c.lineTo(x+S*d,y+S*e);c.stroke();}
+  c.lineWidth=1.5; c.strokeStyle='rgba(255,255,255,.55)';
+  c.beginPath(); c.ellipse(x+S*.55,y+S*.6,S*.16,S*.07,-.3,0,Math.PI*1.4); c.stroke();
+  c.restore();
+  sparkle(c,x+S*.32,y+S*.3,7); sparkle(c,x+S*.7,y+S*.42,5);
+  for(const [px,py,r] of [[.14,.2,13],[.86,.22,11],[.12,.8,12],[.88,.82,14],[.5,.12,9],[.5,.9,10]]) felt(c,ell(x+S*px,y+S*py,r,r*.75),'#FFFFFF',{depth:3,light:.2,dark:.22});
+  // 冰上的小企鹅
+  const qx=x+S*.42,qy=y+S*.62;
+  felt(c,ell(qx-5,qy+1,5,2.6),'#F2A33A');felt(c,ell(qx+5,qy+1,5,2.6),'#F2A33A');
+  felt(c,ell(qx,qy-14,12,15),'#2F3A4A',{depth:2,light:.3});
+  felt(c,ell(qx,qy-11,8,11),'#FFFFFF',{fuzz:.5,flen:.6});
+  c.fillStyle='#1E1A1A'; for(const dx of [-4,4]){c.beginPath();c.arc(qx+dx,qy-20,1.8,0,7);c.fill();}
+  felt(c,ell(qx,qy-16.5,3.5,2.2),'#F2A33A',{fuzz:.3,flen:.4});
+  felt(c,rr(qx-12,qy-11,24,4,2),'#E8735A',{fuzz:.4,flen:.5});
+}
+
+/* 第三章 糖果镇：棒棒糖（炸不掉）、纸杯蛋糕（能炸） */
+const LOLLI=['#F07E9C','#7CC46A','#5DAEE8','#9C7FD6'];
+function lollipop(c,x,y,v){
+  const cx=x+T/2,base=y+T-8,col=LOLLI[v%4];
+  shadow(c,cx+3,base+2,T*.36,T*.13,.3);
+  felt(c,rr(cx-3.5,base-34,7,34,3),'#FFF7EC',{depth:2,light:.3,fuzz:.5,flen:.6});
+  felt(c,ell(cx,base-46,22,21,.02),col,{depth:5,light:.42});
+  c.save(); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=4.5; c.lineCap='round'; c.beginPath();
+  for(let t=0;t<4.2*Math.PI;t+=.15){const r=1.3+t*1.32; c.lineTo(cx+Math.cos(t)*r,base-46+Math.sin(t)*r);} c.stroke(); c.restore();
+  felt(c,ell(cx-7,base-55,6,3.5),'#FFFFFF',{light:0,dark:0,fuzz:.4,flen:.4});
+  felt(c,[[cx,base-24],[cx-11,base-30],[cx-11,base-18]],'#F3B94E',{fuzz:.4,flen:.5,depth:1});
+  felt(c,[[cx,base-24],[cx+11,base-30],[cx+11,base-18]],'#F3B94E',{fuzz:.4,flen:.5,depth:1});
+}
+const FROST=['#F59AB4','#FFF2D9','#9FD3EE','#C9B3EE'];
+function cupcake(c,x,y,v){
+  const cx=x+T/2,base=y+T-8,fr=FROST[v%4];
+  shadow(c,cx+3,base+2,T*.42,T*.14,.32);
+  felt(c,smooth([[cx-20,base-26],[cx+20,base-26],[cx+15,base],[cx-15,base]],1),'#F3B94E',{depth:4,light:.3});
+  c.save(); c.strokeStyle='rgba(160,95,30,.45)'; c.lineWidth=1.6; for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(cx+i*7.5,base-24);c.lineTo(cx+i*5.8,base-2);c.stroke();} c.restore();
+  felt(c,ell(cx,base-30,24,10),fr,{depth:3,light:.4});
+  felt(c,ell(cx,base-40,18,9),fr,{depth:3,light:.4});
+  felt(c,ell(cx,base-49,11,7),fr,{depth:2,light:.45});
+  for(const [dx,dy,cl] of [[-12,-31,'#F07E9C'],[10,-33,'#5DAEE8'],[-4,-41,'#7CC46A'],[8,-44,'#F3B94E'],[0,-30,'#9C7FD6']]) felt(c,rr(cx+dx-3,base+dy-1.3,6,2.6,1.3),cl,{fuzz:.2,flen:.3,light:.3});
+  dot(c,cx+1,base-58,5.2,'#E2513F');
+  c.save(); c.strokeStyle='#4C8A3E'; c.lineWidth=1.6; c.beginPath(); c.moveTo(cx+2,base-62); c.quadraticCurveTo(cx+5,base-69,cx+9,base-70); c.stroke(); c.restore();
 }
 function grassTuft(c,x,y){c.save();c.strokeStyle='#8DAE4C';c.lineWidth=1.6;c.lineCap='round';for(let i=0;i<5;i++){c.beginPath();c.moveTo(x+i*2-4,y);c.lineTo(x+i*2-4+rn(-3,3),y-rn(5,9));c.stroke();}c.restore();}
 
@@ -293,6 +376,15 @@ const MODES={
 };
 
 const rand=(a,b)=>a+Math.random()*(b-a);
+// 电脑难度：think=闲着时多久想一次，step=每走一格停顿，aggr=进攻欲望，hunt=多想炸玩家，popR=多远会去戳被困的人，slow=移动速度倍率
+const DIFF={
+  easy:  {label:'简单',think:[.35,.6],step:[.06,.18],aggr:[.2,.35],hunt:.5,popR:4,slow:.82},
+  normal:{label:'普通',think:[.15,.3],step:[.02,.1],aggr:[.4,.6],hunt:1.5,popR:8,slow:.92},
+  hard:  {label:'困难',think:[.05,.2],step:[0,.08],aggr:[.55,.8],hunt:3,popR:14,slow:1},
+};
+const store={get(k,d){try{return localStorage.getItem(k)||d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+let diff=DIFF[store.get('bf-diff','normal')]?store.get('bf-diff','normal'):'normal';
+
 const grid=v=>Array.from({length:ROWS},()=>Array(COLS).fill(v));
 const inb=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS;
 const bombAt=(x,y)=>bombs.find(b=>b.x===x&&b.y===y);
@@ -340,22 +432,37 @@ addEventListener('blur',()=>{for(const k in keys) keys[k]=false;});
 
 /* ---------- 地图与回合 ---------- */
 function pickItem(){let r=Math.random()*100; for(const [t,w] of ITEM_W){if((r-=w)<0) return t;} return 'bubble';}
-// 第一章 花园：8 棵大树 + 中心 2x2 花坛炸不掉，其余空地随机放能炸的小房子
-// 中心 3x3 花坛 + 8 棵大树，上下左右对称
-const TREES=[[2,2],[12,2],[2,8],[12,8],[7,2],[7,8],[4,5],[10,5]], BED=[];
-for(let y=4;y<=6;y++) for(let x=6;x<=8;x++) BED.push([x,y]);
+// W = 炸不掉的单格（树/雪松/棒棒糖），C = 中心 3x3 大摆件，其余空地随机放能炸的东西
+const MAPS=[
+  {id:'garden',ch:'第一章',name:'花园',frame:'#B9CC6E',g:['#D6E48F','#C5D97C'],box:.62,
+   crumb:v=>[HOUSE_COL[v],'#F6E7CF'],
+   help:'大树和花坛炸不掉，小房子能炸开，里面可能藏着道具',
+   layout:['...............','...............','..W....W....W..','...............','......CCC......','....W.CCC.W....','......CCC......','...............','..W....W....W..','...............','...............']},
+  {id:'snow',ch:'第二章',name:'雪原',frame:'#A9CBE0',g:['#F4F8FB','#E1ECF4'],box:.6,
+   crumb:v=>[SCARF[v],'#FFFFFF'],
+   help:'雪松和冰湖炸不掉，雪人能炸开，里面可能藏着道具',
+   layout:['...............','...............','..W...W.W...W..','...............','....W.CCC.W....','.W....CCC....W.','....W.CCC.W....','...............','..W...W.W...W..','...............','...............']},
+  {id:'candy',ch:'第三章',name:'糖果镇',frame:'#EFB0C4',g:['#FDE9EE','#F8D6E0'],box:.6,
+   crumb:v=>[FROST[v],'#F3B94E'],
+   help:'棒棒糖炸不掉，纸杯蛋糕能炸开，里面可能藏着道具',
+   layout:['...............','...............','..W.........W..','.....W...W.....','...W.......W...','.......W.......','...W.......W...','.....W...W.....','..W.........W..','...............','...............']},
+];
+let MAP=MAPS.find(m=>m.id===store.get('bf-map','garden'))||MAPS[0], CENTER=null;
 const SAFE=[[0,0],[1,0],[2,0],[0,1],[0,2]];
 function genMap(){
   map=grid(EMPTY); hidden=grid(null); itemsG=grid(null); fl=grid(null); wallKind=grid(null); houseVar=grid(0);
-  for(const [x,y] of TREES){map[y][x]=WALL; wallKind[y][x]='tree';}
-  for(const [x,y] of BED){map[y][x]=WALL; wallKind[y][x]='bed';}
+  CENTER=null;
+  MAP.layout.forEach((row,y)=>[...row].forEach((ch,x)=>{
+    if(ch==='W'){map[y][x]=WALL; wallKind[y][x]='wall';}
+    if(ch==='C'){map[y][x]=WALL; wallKind[y][x]='center'; if(!CENTER) CENTER=[x,y];}
+  }));
   const safe=grid(false);
   for(const [cx,cy] of [[0,0],[COLS-1,0],[0,ROWS-1],[COLS-1,ROWS-1]]){
     const sx=cx?-1:1, sy=cy?-1:1;
     for(const [dx,dy] of SAFE) safe[cy+dy*sy][cx+dx*sx]=true;
   }
   for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
-    if(map[y][x]!==EMPTY||safe[y][x]||Math.random()>=.62) continue;
+    if(map[y][x]!==EMPTY||safe[y][x]||Math.random()>=MAP.box) continue;
     map[y][x]=BOX; houseVar[y][x]=Math.floor(Math.random()*4);
     if(Math.random()<.55) hidden[y][x]=pickItem();
   }
@@ -364,7 +471,7 @@ function mkPlayer([key,team,[tx,ty]]){
   const r=ROSTER[key];
   return {key,name:r.name,color:CHAR[r.kind].ring,kind:r.kind,ctrl:r.ctrl||null,ai:!r.ctrl,team,x:tx+.5,y:ty+.5,
     speed:SPEED0,maxB:1,power:1,needles:0,alive:true,trapped:false,trapT:0,deadT:0,shield:0,
-    dir:'down',moving:false,stack:[],aiPath:null,aiThink:.5,goal:null,aggr:rand(.55,.8)};
+    dir:'down',moving:false,stack:[],aiPath:null,aiThink:.5,goal:null,aggr:rand(...DIFF[diff].aggr)};
 }
 function newRound(){
   genMap(); bombs=[]; players=MODES[mode].map(mkPlayer);
@@ -491,14 +598,14 @@ function aiDecide(p){
   for(const o of players){
     if(o===p||!o.alive||!o.trapped) continue;
     const [ox,oy]=tileOf(o);
-    if(R.dist[oy][ox]>0&&R.dist[oy][ox]<14&&safe(ox,oy)){p.aiPath=pathTo(R,ox,oy).slice(0,1); return;}
+    if(R.dist[oy][ox]>0&&R.dist[oy][ox]<(o.team===p.team?14:DIFF[diff].popR)&&safe(ox,oy)){p.aiPath=pathTo(R,ox,oy).slice(0,1); return;}
   }
   const canBomb=bombs.filter(b=>b.owner===p).length<p.maxB;
   const value=(x,y)=>{
     let v=0;
     for(const [bx,by] of blastTiles(x,y,p.power)){
       if(map[by][bx]===BOX&&D[by][bx]===Infinity) v+=1;
-      for(const e of enemies){const [ex,ey]=tileOf(e); if(ex===bx&&ey===by&&!e.trapped) v+=3;}
+      for(const e of enemies){const [ex,ey]=tileOf(e); if(ex===bx&&ey===by&&!e.trapped) v+=e.ai?3:DIFF[diff].hunt;}
     }
     return v;
   };
@@ -528,10 +635,10 @@ function aiUpdate(p,dt){
   if(p.aiPath&&p.aiPath.length&&!p.trapped){
     const [nx,ny]=p.aiPath[0], [tx,ty]=tileOf(p);
     if(!(nx===tx&&ny===ty)&&!walkable(nx,ny)){p.aiPath=[[tx,ty]]; return;}
-    const gx=nx+.5, gy=ny+.5; let dx=gx-p.x, dy=gy-p.y, step=p.speed*dt;
+    const gx=nx+.5, gy=ny+.5; let dx=gx-p.x, dy=gy-p.y, step=p.speed*DIFF[diff].slow*dt;
     p.moving=true;
     p.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
-    if(Math.abs(dx)+Math.abs(dy)<=step){p.x=gx; p.y=gy; p.aiPath.shift(); if(!p.aiPath.length) p.aiThink=rand(0,.08); return;}
+    if(Math.abs(dx)+Math.abs(dy)<=step){p.x=gx; p.y=gy; p.aiPath.shift(); if(!p.aiPath.length) p.aiThink=rand(...DIFF[diff].step); return;}
     // 先对齐较小的轴，避免切角穿墙
     const first=Math.abs(dx)<Math.abs(dy)?'x':'y';
     for(const ax of [first,first==='x'?'y':'x']){
@@ -540,7 +647,7 @@ function aiUpdate(p,dt){
     }
   } else {
     p.aiThink-=dt;
-    if(p.aiThink<=0){p.aiThink=p.trapped?.3:rand(.05,.2); aiDecide(p);}
+    if(p.aiThink<=0){p.aiThink=p.trapped?.3:rand(...DIFF[diff].think); aiDecide(p);}
   }
 }
 
@@ -594,10 +701,6 @@ function bubbleFx(c,cx,fy){
 }
 const SPR={};
 function buildSprites(){
-  SPR.ground=sprite(W,H,g=>{ground(g); for(let i=0;i<36;i++) grassTuft(g,rn(8,W-8),rn(12,H-4));});
-  SPR.tree=[0,1].map(v=>sprite(T,T*1.5,g=>tree(g,0,T*.5,v)));
-  SPR.house=[0,1,2,3].map(v=>sprite(T,T*1.5,g=>house(g,0,T*.5,v)));
-  SPR.bed=sprite(T*3,T*3.5,g=>flowerbed(g,0,T*.5,3));
   SPR.bomb=sprite(T,T,g=>glossBall(g,32,34,20));
   SPR.wh=sprite(T+12,T,g=>waterSeg(g,2,15,T+8,T-30));
   SPR.wv=sprite(T,T+12,g=>waterSeg(g,15,2,T-30,T+8));
@@ -610,6 +713,23 @@ function buildSprites(){
   }
   SPR.bubble=sprite(100,110,g=>bubbleFx(g,50,100));
   SPR.icon={}; for(const t in SPR.item) SPR.icon[t]=SPR.item[t].toDataURL();
+}
+// 地图贴图第一次用到时才画，之后缓存
+const MSPR={};
+function mapSprites(m){
+  if(MSPR[m.id]) return MSPR[m.id];
+  const [wallFn,boxFn,cenFn,deco]={garden:[tree,house,flowerbed,grassTuft],snow:[pine,snowman,pond,snowDots],candy:[lollipop,cupcake,null,sprinkle]}[m.id];
+  const o={};
+  o.ground=sprite(W,H,g=>{ground(g,m.g[0],m.g[1]); for(let i=0;i<36;i++) deco(g,rn(8,W-8),rn(12,H-4));});
+  o.wall=[0,1].map(v=>sprite(T,T*1.5,g=>wallFn(g,0,T*.5,v)));
+  o.box=[0,1,2,3].map(v=>sprite(T,T*1.5,g=>boxFn(g,0,T*.5,v)));
+  o.center=cenFn?sprite(T*3,T*3.5,g=>cenFn(g,0,T*.5,3)):null;
+  return MSPR[m.id]=o;
+}
+function applyMap(){
+  SPR.m=mapSprites(MAP);
+  document.getElementById('wrap').style.setProperty('--c',MAP.frame);
+  document.querySelector('#brand .banner').textContent=MAP.ch+' · '+MAP.name;
 }
 
 let prevBox, dying=[], parts=[];
@@ -644,8 +764,8 @@ function drawChar(p){
   }
 }
 function render(dt){
-  ctx.fillStyle='#B9CC6E'; ctx.fillRect(0,-TOP,W,H+TOP);
-  ctx.drawImage(SPR.ground,0,0,W,H);
+  ctx.fillStyle=MAP.frame; ctx.fillRect(0,-TOP,W,H+TOP);
+  ctx.drawImage(SPR.m.ground,0,0,W,H);
   // 地面层：道具、水柱、水泡
   for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
     const it=itemsG[y][x];
@@ -669,19 +789,19 @@ function render(dt){
   // 房子被炸掉：记下来做弹一下再消失的动画
   for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) if(prevBox[y][x]&&map[y][x]!==BOX){
     prevBox[y][x]=false; const v=houseVar[y][x];
-    dying.push({x,y,v,t:0}); spawn(x*T+T/2,y*T+T/2,HOUSE_COL[v],6,90,5); spawn(x*T+T/2,y*T+T/2,'#F6E7CF',4,80,4.5);
+    const [c1,c2]=MAP.crumb(v); dying.push({x,y,v,t:0}); spawn(x*T+T/2,y*T+T/2,c1,6,90,5); spawn(x*T+T/2,y*T+T/2,c2,4,80,4.5);
   }
   dying=dying.filter(d=>(d.t+=dt)<.3);
   // 立体层：按行从上往下画，近处盖住远处
   for(let y=0;y<ROWS;y++){
     for(let x=0;x<COLS;x++){
-      if(map[y][x]===BOX) ctx.drawImage(SPR.house[houseVar[y][x]],x*T,y*T-T*.5,T,T*1.5);
-      else if(map[y][x]===WALL&&wallKind[y][x]==='tree') ctx.drawImage(SPR.tree[(x+y)%2],x*T,y*T-T*.5,T,T*1.5);
-      else if(wallKind[y][x]==='bed'&&x===6&&y===4) ctx.drawImage(SPR.bed,6*T,4*T-T*.5,T*3,T*3.5);
+      if(map[y][x]===BOX) ctx.drawImage(SPR.m.box[houseVar[y][x]],x*T,y*T-T*.5,T,T*1.5);
+      else if(map[y][x]===WALL&&wallKind[y][x]==='wall') ctx.drawImage(SPR.m.wall[(x+y)%2],x*T,y*T-T*.5,T,T*1.5);
+      else if(wallKind[y][x]==='center'&&SPR.m.center&&CENTER[0]===x&&CENTER[1]===y) ctx.drawImage(SPR.m.center,x*T,y*T-T*.5,T*3,T*3.5);
     }
     for(const d of dying) if(d.y===y){
       const s=d.t<.08?1+d.t*3:1.24-(d.t-.08)*5.6; if(s<=0) continue;
-      ctx.save(); ctx.globalAlpha=Math.min(1,s); ctx.translate(d.x*T+T/2,d.y*T+T); ctx.scale(s,s*(d.t<.08?.9:1)); ctx.drawImage(SPR.house[d.v],-T/2,-T*1.5,T,T*1.5); ctx.restore();
+      ctx.save(); ctx.globalAlpha=Math.min(1,s); ctx.translate(d.x*T+T/2,d.y*T+T); ctx.scale(s,s*(d.t<.08?.9:1)); ctx.drawImage(SPR.m.box[d.v],-T/2,-T*1.5,T,T*1.5); ctx.restore();
     }
     players.filter(p=>Math.floor(p.y)===y).sort((a,b)=>a.x-b.x).forEach(drawChar);
   }
@@ -778,7 +898,9 @@ function updHud(dt){
 function showMenu(){
   state='menu'; overlay.className='';
   overlay.innerHTML=`<div class="felt panel">
-    <img class="logo" src="${LOGO}" alt="Bubble Fluff"><div class="sub">毛毡泡泡对战 · 第一章 花园</div>
+    <img class="logo" src="${LOGO}" alt="Bubble Fluff"><div class="sub">毛毡泡泡对战</div>
+    <div class="pick"><span>地图</span>${MAPS.map(m=>`<button class="felt chip${m===MAP?' on':''}" data-map="${m.id}" style="--c:${m.frame}">${m.ch}<small>${m.name}</small></button>`).join('')}</div>
+    <div class="pick"><span>电脑</span>${Object.entries(DIFF).map(([k,d])=>`<button class="felt chip${k===diff?' on':''}" data-diff="${k}" style="--c:${{easy:'#9CCB7A',normal:'#F3B94E',hard:'#E8735A'}[k]}">${d.label}</button>`).join('')}</div>
     <div class="modes">
       <button class="felt" data-m="solo">单人闯关<small>你 vs 3 个电脑</small></button>
       <button class="felt b2" data-m="coop">双人合作<small>玩家1+2 vs 2 个电脑</small></button>
@@ -788,11 +910,13 @@ function showMenu(){
     <div class="felt help">
       小农夫（玩家1）：<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移动 · <kbd>空格</kbd> 放水泡 · <kbd>Shift</kbd> 用针<br>
       白鸭鸭（玩家2）：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动 · <kbd>Enter</kbd> 放水泡 · <kbd>E</kbd> 用针<br>
-      大树和花坛炸不掉，小房子能炸开，里面可能藏着道具<br>
+      ${MAP.help}<br>
       ${ic('bubble')} 水泡+1 · ${ic('power')} 水柱变长 · ${ic('speed')} 变快 · ${ic('needle')} 被困时自救<br>
       <kbd>P</kbd> 暂停 · <kbd>M</kbd> 静音 · <kbd>Esc</kbd> 回菜单
     </div></div>`;
-  overlay.querySelectorAll('button').forEach(b=>b.onclick=()=>{b.blur(); mode=b.dataset.m; newRound();});
+  overlay.querySelectorAll('button[data-m]').forEach(b=>b.onclick=()=>{b.blur(); mode=b.dataset.m; newRound();});
+  overlay.querySelectorAll('button[data-map]').forEach(b=>b.onclick=()=>{MAP=MAPS.find(m=>m.id===b.dataset.map); store.set('bf-map',MAP.id); applyMap(); genMap(); buildBoard(); players=[]; document.getElementById('hud').innerHTML=''; showMenu();});
+  overlay.querySelectorAll('button[data-diff]').forEach(b=>b.onclick=()=>{diff=b.dataset.diff; store.set('bf-diff',diff); showMenu();});
 }
 function showResult(){
   state='over';
@@ -829,7 +953,7 @@ function loop(now){
 (async()=>{
   try{await Promise.race([document.fonts.load('700 100px Fredoka'),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
   LOGO=makeLogo(); document.getElementById('logoSmall').src=LOGO;
-  genMap(); buildBoard(); showMenu(); requestAnimationFrame(loop);
+  applyMap(); genMap(); buildBoard(); showMenu(); requestAnimationFrame(loop);
 })();
 </script>
 </body>
